@@ -1,0 +1,481 @@
+:root {
+    /* Ranglar palitrasi: PUBG Sariq & Ko'k */
+    --primary-yellow: #FFD700;
+    --primary-orange: #FFA500;
+    --primary-blue: #0056b3;
+    --dark-blue: #0a192f;
+    --bg-light: #f4f6f8;
+    --bg-dark: #121212;
+    --card-light: #ffffff;
+    --card-dark: #1e1e1e;
+    --text-light: #333;
+    --text-dark: #f1f1f1;
+    
+    /* Standart (Light mode default) */
+    --bg-color: var(--bg-light);
+    --card-bg: var(--card-light);
+    --text-color: var(--text-light);
+    --accent: var(--primary-blue);
+    --gold-gradient: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%);
+    --shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: var(--bg-dark);
+        --card-bg: var(--card-dark);
+        --text-color: var(--text-dark);
+        --shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background 0.3s, color 0.3s;
+    padding-bottom: 80px; /* Nav uchun joy */
+    overflow-x: hidden;
+}
+
+/* 1. INTRO ANIMATSIYA */
+#intro-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.animation-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.golden-ball {
+    width: 30px;
+    height: 30px;
+    background: var(--gold-gradient);
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: -50px; /* Chapdan keladi */
+    box-shadow: 0 0 20px var(--primary-yellow);
+    animation: rollIn 1.5s ease-in forwards, explode 0.5s 1.5s ease-out forwards;
+}
+
+@keyframes rollIn {
+    0% { left: -50px; transform: translateY(-50%) rotate(0deg); }
+    60% { left: 50%; transform: translateY(-50%) translateX(-50%) rotate(720deg); }
+    100% { left: 50%; transform: translateY(-50%) translateX(-50%) rotate(1080deg) scale(1.2); }
+}
+
+@keyframes explode {
+    0% { transform: translateY(-50%) translateX(-50%) scale(1.2); opacity: 1; }
+    50% { transform: translateY(-50%) translateX(-50%) scale(2); opacity: 0.5; }
+    100% { transform: translateY(-50%) translateX(-50%) scale(3); opacity: 0; }
+}
+
+.particle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    background: var(--primary-yellow);
+    border-radius: 50%;
+    opacity: 0;
+}
+
+/* JS dinamik qo'shadi bu classni */
+.particle.active {
+    animation: particleFly 0.8s ease-out forwards;
+}
+
+@keyframes particleFly {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+}
+
+.loading-text {
+    color: var(--primary-yellow);
+    margin-top: 20px;
+    opacity: 0;
+    animation: fadeIn 0.5s 1s forwards;
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+
+/* HEADER */
+header {
+    background: var(--primary-blue);
+    padding: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0,86,179,0.3);
+}
+
+.user-balance-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-balance-card h2 { margin: 0; font-size: 24px; }
+.add-btn {
+    background: var(--gold-gradient);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 20px;
+    color: #000;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* SECTIONS */
+.hidden-section { display: none; }
+.active-section { display: block; animation: slideUp 0.3s ease-out; }
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.section-title {
+    padding: 15px 20px 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* GRID */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    padding: 15px;
+}
+
+.product-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+    border: 1px solid transparent;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-yellow);
+}
+
+.uc-icon {
+    font-size: 30px;
+    color: var(--primary-orange);
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+}
+
+.price-tag {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+    color: var(--primary-blue);
+}
+
+.buy-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* PROFILE */
+.profile-card {
+    margin: 20px;
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.profile-header img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-yellow);
+    margin-bottom: 10px;
+}
+
+.user-id-badge {
+    background: rgba(0, 86, 179, 0.1);
+    color: var(--primary-blue);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+}
+
+.security-note {
+    background: rgba(0, 255, 0, 0.05);
+    color: #2e7d32;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: var(--card-bg);
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #888;
+    font-size: 12px;
+    cursor: pointer;
+    position: relative;
+}
+
+.nav-item i { font-size: 20px; margin-bottom: 5px; }
+.nav-item.active { color: var(--primary-blue); }
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: 5px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.badge.hidden { display: none; }
+
+/* MODALS */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 20px;
+    width: 80%;
+    text-align: center;
+    position: relative;
+    border: 1px solid var(--primary-yellow);
+}
+
+.close-modal {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+input {
+    width: 90%;
+    padding: 12px;
+    margin: 15px 0;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: var(--bg-color);
+    color: var(--text-color);
+}
+
+.primary-btn {
+    background: var(--gold-gradient);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: bold;
+    color: #000;
+    cursor: pointer;
+    width: 100%;
+}
+.cards-container {
+    background: rgba(0, 86, 179, 0.05);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+.card-item {
+    padding: 8px;
+    border-bottom: 1px dashed #ccc;
+    cursor: pointer;
+}
+.card-item:last-child { border: none; }
+.card-item b { color: var(--primary-blue); font-family: monospace; }
+.small-hint { font-size: 12px; color: #666; margin: 10px 0; }
+.file-label {
+    display: block;
+    background: #eee;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 5px;
+    border: 1px dashed var(--primary-blue);
+}
+
+.file-hint { font-size: 11px; color: #888; margin-bottom: 15px; }
+
+/* Savat bo'limi uchun umumiy stil */
+#section-cart {
+    background-color: #000000;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Sarlavha qismi */
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #f0f2f5;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.section-title h3 {
+    margin: 0;
+    color: #1a73e8; /* Ko'k rang */
+    font-size: 1.5rem;
+}
+
+/* Tozalash tugmasi */
+.clear-cart {
+    background-color: transparent;
+    color: #dc3545; /* O'chirish uchun qizilroq rang */
+    border: 1px solid #dc3545;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.clear-cart:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Savat ichidagi mahsulotlar ro'yxati */
+#cart-items {
+    min-height: 100px;
+    margin-bottom: 20px;
+}
+
+.empty-state {
+    text-align: center;
+    color: #888;
+    padding: 30px 0;
+    font-style: italic;
+}
+
+/* Savat pastki qismi (footer) */
+.cart-footer {
+    border-top: 2px solid #f0f2f5;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.total-price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333;
+}
+
+#cart-total {
+    color: #1a73e8; /* Jami summa ko'k rangda */
+}
+
+/* Sotib olish tugmasi */
+#checkout-btn {
+    background-color: #1a73e8; /* Asosiy ko'k */
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%; /* Mobil uchun qulay */
+    transition: background-color 0.3s transform 0.2s;
+    box-shadow: 0 4px 6px rgba(26, 115, 232, 0.2);
+}
+
+#checkout-btn:hover {
+    background-color: #1557b0;
+    transform: translateY(-2px);
+}
+
+#checkout-btn:active {
+    transform: translateY(0);
+}
+
+/* Savatga mahsulot qo'shilgandagi elementlar uchun (agar dinamik qo'shsangiz) */
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+

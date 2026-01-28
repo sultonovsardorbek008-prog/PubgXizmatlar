@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>PUBG UC Store</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="intro-loader">
+        <div class="animation-container">
+            <div class="golden-ball"></div>
+            <div class="particles">
+                </div>
+        </div>
+        <h2 class="loading-text">PUBG UC STORE BY SHIDO</h2>
+    </div>
+
+    <div id="app" style="display: none;">
+        
+        <header>
+            <div class="user-balance-card">
+                <span>Balans:</span>
+                <h2 id="balance-display">0 UZS</h2>
+                <button class="add-btn" onclick="openTopupModal()">+</button>
+            </div>
+        </header>
+
+        <main>
+            <section id="section-shop" class="active-section">
+                <div class="section-title">
+                    <h3>⚡ Ommabop Paketlar</h3>
+                </div>
+                <div class="products-grid" id="products-container">
+                    </div>
+            </section>
+
+            <section id="section-cart" class="hidden-section">
+                <div class="section-title">
+                    <h3>🛒 Savat</h3>
+                    <button class="clear-cart" onclick="clearCart()"><i class="fa-solid fa-trash"></i> Tozalash</button>
+                </div>
+                <div id="cart-items">
+                    <div class="empty-state">Savat bo'sh</div>
+                </div>
+                <div class="cart-footer">
+                    <div class="total-price">Jami: <span id="cart-total">0</span> UZS</div>
+                    <button id="checkout-btn" onclick="checkout()">Sotib Olish</button>
+                </div>
+            </section>
+
+            <section id="section-profile" class="hidden-section">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <img id="user-avatar" src="https://via.placeholder.com/100" alt="User">
+                        <div class="profile-info">
+                            <h3 id="user-name">Yuklanmoqda...</h3>
+                            <p id="user-username">@username</p>
+                            <span class="user-id-badge">ID: <span id="user-id">---</span></span>
+                        </div>
+                    </div>
+                    <div class="security-note">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <p>Ushbu hisob Telegram orqali tasdiqlangan. Xavfsiz tranzaksiya kafolatlangan.</p>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <div class="action-item">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>Tarix</span>
+                        </div>
+                        <div class="action-item">
+                            <i class="fa-solid fa-headset"></i>
+                            <span>Yordam</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('shop')">
+                <i class="fa-solid fa-store"></i>
+                <span>Do'kon</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('cart')">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cart-badge" class="badge hidden">0</span>
+                <span>Savat</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile')">
+                <i class="fa-solid fa-user"></i>
+                <span>Profil</span>
+            </div>
+        </nav>
+    </div>
+
+    <div id="topup-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeTopupModal()">&times;</span>
+        <h3>Hisobni to'ldirish</h3>
+        
+        <div class="cards-container">
+            <div class="card-item" onclick="copyCard('5614 6868 1732 2558')">
+                <p>💳 Uzcard: <b>5614 **** **** 2558</b> <i class="fa-solid fa-copy"></i></p>
+            </div>
+            <div class="card-item" onclick="copyCard('9860 3566 2956 8946')">
+                <p>💳 Humo: <b>9860 **** **** 8946</b> <i class="fa-solid fa-copy"></i></p>
+            </div>
+            <div class="card-item" onclick="copyCard('4176 5500 2672 5055')">
+                <p>💳 Visa: <b>4176 **** **** 5055</b> <i class="fa-solid fa-copy"></i></p>
+            </div>
+        </div>
+
+        <p class="small-hint">Summani So'mda yoki Visaga AQSH Dollarida o'tkazing va chekni yuklang:</p>
+        
+        <input type="number" id="topup-amount" placeholder="Summa (UZS)">
+        
+        <label for="receipt-upload" class="file-label">
+            <i class="fa-solid fa-camera"></i> Chekni tanlash (Rasm)
+        </label>
+        <input type="file" id="receipt-upload" accept="image/*" style="display:none" onchange="previewFile()">
+        
+        <div id="file-preview-name" class="file-hint">Fayl tanlanmagan</div>
+
+        <button id="send-topup-btn" class="primary-btn" onclick="requestTopup()">Tasdiqlash uchun yuborish</button>
+    </div>
+</div>
+
+    <div id="pubg-id-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closePubgModal()">&times;</span>
+            <h3>PUBG ID Kiritish</h3>
+            <p>UC qaysi akkauntga tushsin? ID raqam yozing:</p>
+            <input type="number" id="pubg-game-id" placeholder="5123456789">
+            <button class="primary-btn" onclick="processPayment()">To'lash</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,16 @@
+{
+    "name": "pubg-uc-bot/backend",
+    "description": "PUBG Mobile UC Bot Backend",
+    "type": "project",
+    "require": {
+        "php": "^8.2",
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*"
+    },
+    "authors": [
+        {
+            "name": "Admin",
+            "email": "admin@example.com"
+        }
+    ]
+}
