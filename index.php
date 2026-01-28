@@ -181,7 +181,7 @@ function handleTelegramUpdate() {
             $keyboard = [
                 'inline_keyboard' => [
                     [
-                        ['text' => "PUBG UC Do'koni 🛒", 'web_app' => ['url' => WEBAPP_URL]]
+                        ['text' => "PUBG XIZMATLARGA KIRISH 🛒", 'web_app' => ['url' => WEBAPP_URL]]
                     ],
                     [
                         ['text' => "Admin Aloqa 👨💻", 'url' => 'https://t.me/SultanovSardorbekSheraliyevich']
@@ -194,7 +194,7 @@ function handleTelegramUpdate() {
                 $keyboard['inline_keyboard'][] = [['text' => "Admin Panel ⚙️", 'callback_data' => 'admin_panel']];
             }
 
-            sendMessage($chat_id, "Assalomu alaykum, $first_name! \n\nPUBG Mobile UC xizmatiga xush kelibsiz. Quyidagi tugma orqali do'konga kiring:", $keyboard);
+            sendMessage($chat_id, "Assalomu alaykum, $first_name! \n\n🖥 ASOSIY MENYU:", $keyboard);
         }
         // --- ADMIN PANEL BOSHLANDI ---
         if ($chat_id == ADMIN_ID) {
