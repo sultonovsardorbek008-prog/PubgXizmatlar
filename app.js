@@ -1,76 +1,34 @@
-// app.js
-
-// 1. TELEGRAM WEBAPP INIT
+// ==========================================
+// 1. INITIALIZATION & CONFIG
+// ==========================================
 const tg = window.Telegram.WebApp;
-tg.expand(); // To'liq ekran qilish
+tg.expand();
 
-// Rang sxemasini avtomatik sozlash (Light/Dark)
-document.documentElement.style.setProperty('--tg-theme-bg', tg.themeParams.bg_color);
+const API_BASE_URL = window.location.origin;
 
-// 2. CONFIG
-// MUHIM: Bu yerga Renderdagi URLingizni yozing (oxirida / yo'q)
-const API_BASE_URL = window.location.origin; // Agar index.php bilan bir joyda tursa
+// State (Holat)
+let cart = [];
+let userBalance = 0;
+let userTelegramId = null;
+let currentProductId = null;
+let selectedFileBase64 = null;
 
-// UC Paketlari (Backenddan ham olish mumkin, hozircha static)
+// Mahsulotlar ro'yxati
 const products = [
-    // UC Paketlari
     { id: 1, type: 'uc', label: "60 UC", price: 12000, uc: 60 },
     { id: 2, type: 'uc', label: "325 UC", price: 58000, uc: 325 },
-    
-    // Mashhurlik (Popularity)
+    { id: 3, type: 'uc', label: "660 UC", price: 118000, uc: 660 },
     { id: 101, type: 'pop', label: "100K Mashhurlik", price: 45000 },
     { id: 102, type: 'pop', label: "500K Mashhurlik", price: 200000 },
-    
-    // Akkauntlar
     { id: 201, type: 'acc', label: "M416 Muzli Lv.4", price: 850000, description: "Old loginlar toza" },
     { id: 202, type: 'acc', label: "Full Akkaunt", price: 2500000, description: "Evo setlar bor" }
 ];
 
-// Kategoriyani almashtirish funksiyasi
-function showCategory(type) {
-    const btns = document.querySelectorAll('.tab-btn');
-    btns.forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-
-    renderProducts(type);
-}
-
-// Mahsulotlarni ekranga chiqarish (Yangilangan)
-function renderProducts(filterType = 'uc') {
-    const list = document.getElementById('product-list');
-    list.innerHTML = '';
-
-    const filtered = products.filter(p => p.type === filterType);
-
-    filtered.forEach(p => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.innerHTML = `
-            <h4>${p.label}</h4>
-            <p class="price">${p.price.toLocaleString()} UZS</p>
-            ${p.description ? `<small>${p.description}</small>` : ''}
-            <button onclick="addToCart(${p.id})">Sotib olish</button>
-        `;
-        list.appendChild(card);
-    });
-}
-
-
-
-// Sayt ochilganda UC ni ko'rsatish
-renderProducts('uc');
-
-let currentProductId = null; // Tanlangan mahsulotni saqlash uchun
-// State
-let cart = [];
-let userBalance = 0;
-let userTelegramId = null;
-
-// 3. INTRO ANIMATION LOGIC
+// ==========================================
+// 2. APP START & LOADER
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     createExplosionParticles();
-    
-    // 2 soniyadan keyin ilovani ochish
     setTimeout(() => {
         document.getElementById('intro-loader').style.display = 'none';
         document.getElementById('app').style.display = 'block';
@@ -78,81 +36,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2200);
 });
 
-function createExplosionParticles() {
-    const container = document.querySelector('.particles');
-    for (let i = 0; i < 30; i++) {
-        const p = document.createElement('div');
-        p.classList.add('particle');
-        container.appendChild(p);
-        
-        // Tasodifiy yo'nalish
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 100 + Math.random() * 100;
-        const x = Math.cos(angle) * dist + 'px';
-        const y = Math.sin(angle) * dist + 'px';
-        
-        p.style.setProperty('--x', x);
-        p.style.setProperty('--y', y);
-        
-        // Animatsiyani kechiktirish (sharcha kelganidan keyin)
-        setTimeout(() => {
-            p.classList.add('active');
-        }, 1500);
-    }
-}
-
-// 4. APP INITIALIZATION
 function initApp() {
-    // User ma'lumotlarini olish
     const user = tg.initDataUnsafe.user;
-    
     if (user) {
         userTelegramId = user.id;
         document.getElementById('user-name').innerText = user.first_name;
-        document.getElementById('user-username').innerText = user.username ? '@' + user.username : 'Username yo\'q';
         document.getElementById('user-id').innerText = user.id;
-        if(user.photo_url) {
-            document.getElementById('user-avatar').src = user.photo_url;
-        }
-        
-        // Balansni Backenddan olish
+        if(user.photo_url) document.getElementById('user-avatar').src = user.photo_url;
         fetchBalance();
     } else {
-        // Test rejimi (Brauzerda ochilganda)
-        userTelegramId = "123456789"; // Fake ID
+        userTelegramId = "123456789"; // Test uchun
         document.getElementById('user-name').innerText = "Test User";
     }
-
-    renderShop();
+    renderProducts('uc'); // Boshida UC bo'limini ko'rsatish
 }
 
-// 5. FETCH DATA
-async function fetchBalance() {
-    try {
-        const res = await fetch(`${API_BASE_URL}/api/user?id=${userTelegramId}`);
-        const data = await res.json();
-        if (data && data.balance !== undefined) {
-            userBalance = data.balance;
-            document.getElementById('balance-display').innerText = formatMoney(userBalance) + ' UZS';
-        }
-    } catch (e) {
-        console.error("Balans xatosi:", e);
-    }
+// ==========================================
+// 3. SHOP & CATEGORY LOGIC
+// ==========================================
+function showCategory(type) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    renderProducts(type);
 }
 
-// 6. RENDER SHOP
-function renderShop() {
+function renderProducts(filterType) {
     const container = document.getElementById('products-container');
     container.innerHTML = '';
     
-    products.forEach(prod => {
+    const filtered = products.filter(p => p.type === filterType);
+    
+    filtered.forEach(p => {
         const div = document.createElement('div');
         div.className = 'product-card';
         div.innerHTML = `
-            <div class="uc-icon"><i class="fa-solid fa-gem"></i></div>
-            <h3>${prod.label}</h3>
-            <span class="price-tag">${formatMoney(prod.price)} UZS</span>
-            <button class="buy-btn" onclick="addToCart(${prod.id})">
+            <div class="uc-icon"><i class="fa-solid ${p.type === 'acc' ? 'fa-user-shield' : 'fa-gem'}"></i></div>
+            <h3>${p.label}</h3>
+            <span class="price-tag">${formatMoney(p.price)} UZS</span>
+            ${p.description ? `<p style="font-size:10px; opacity:0.7">${p.description}</p>` : ''}
+            <button class="buy-btn" onclick="addToCart(${p.id})">
                 <i class="fa-solid fa-cart-plus"></i> Savatga
             </button>
         `;
@@ -160,119 +82,55 @@ function renderShop() {
     });
 }
 
-// 7. CART LOGIC
+// ==========================================
+// 4. CART LOGIC
+// ==========================================
 function addToCart(id) {
     const product = products.find(p => p.id === id);
-    cart.push(product);
+    cart = [product]; // Soddalik uchun savatda faqat 1 ta mahsulot bo'ladi
     updateCartUI();
-    
-    // Kichik animatsiya (tugmaga)
-    tg.HapticFeedback.notificationOccurred('success'); // Telefon vibratsiyasi
-    showToast("Savatga qo'shildi!");
+    tg.HapticFeedback.notificationOccurred('success');
+    tg.showAlert("Savatga qo'shildi!");
 }
 
 function updateCartUI() {
     const badge = document.getElementById('cart-badge');
-    const container = document.getElementById('cart-items');
-    const totalEl = document.getElementById('cart-total');
-    
-    // Badge update
     if (cart.length > 0) {
         badge.classList.remove('hidden');
         badge.innerText = cart.length;
     } else {
         badge.classList.add('hidden');
     }
-
-    // Render items
-    container.innerHTML = '';
-    let total = 0;
-
-    if(cart.length === 0) {
-        container.innerHTML = '<div class="empty-state">Savat bo\'sh</div>';
-    } else {
-        cart.forEach((item, index) => {
-            total += item.price;
-            const div = document.createElement('div');
-            div.style.cssText = "display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee;";
-            div.innerHTML = `
-                <span>${item.label}</span>
-                <span>${formatMoney(item.price)}</span>
-                <i class="fa-solid fa-trash" style="color:red; cursor:pointer;" onclick="removeFromCart(${index})"></i>
-            `;
-            container.appendChild(div);
-        });
-    }
-    
-    totalEl.innerText = formatMoney(total);
 }
 
-function removeFromCart(index) {
-    cart.splice(index, 1);
-    updateCartUI();
-}
-
-function clearCart() {
-    cart = [];
-    updateCartUI();
-}
-
-// 8. NAVIGATION
-function switchTab(tabName) {
-    // Remove active class from navs
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    // Hide all sections
-    document.querySelectorAll('section').forEach(el => {
-        el.classList.remove('active-section');
-        el.classList.add('hidden-section');
-    });
-
-    // Activate current
-    document.querySelector(`.nav-item[onclick="switchTab('${tabName}')"]`).classList.add('active');
-    
-    const section = document.getElementById(`section-${tabName}`);
-    section.classList.remove('hidden-section');
-    section.classList.add('active-section');
-
-    // Scroll to top
-    window.scrollTo(0, 0);
-}
-
-// 9. CHECKOUT & PAYMENT (YANGILANGAN)
+// ==========================================
+// 5. CHECKOUT & PAYMENT
+// ==========================================
 function checkout() {
-    if (cart.length === 0) return showToast("Savat bo'sh!");
+    if (cart.length === 0) return tg.showAlert("Savat bo'sh!");
     
-    // Hozircha savatda faqat bitta mahsulot bor deb hisoblaymiz (soddalik uchun)
-    // Chunki har bir mahsulot turi (ID yoki Tel) har xil bo'lishi mumkin
     const product = cart[0]; 
     currentProductId = product.id;
 
-    let total = cart.reduce((sum, item) => sum + item.price, 0);
-    
-    if (userBalance < total) {
-        tg.showPopup({
+    if (userBalance < product.price) {
+        return tg.showPopup({
             title: "Mablag' yetarli emas",
             message: "Iltimos, hisobingizni to'ldiring.",
             buttons: [{type: "ok"}]
         });
-        return;
     }
 
-    // Modalni tayyorlash
     const modal = document.getElementById('pubg-id-modal');
-    const inputField = document.getElementById('pubg-game-id'); // HTMLdagi ID nomi
-    const modalTitle = modal.querySelector('h3');
+    const inputField = document.getElementById('pubg-game-id');
+    const modalTitle = document.getElementById('modal-input-title') || modal.querySelector('h3');
 
-    // Mahsulot turiga qarab modalni o'zgartiramiz
+    // Mahsulot turiga qarab modalni sozlash
     if (product.type === 'acc') {
-        modalTitle.innerText = "Aloqa uchun raqamingiz";
+        modalTitle.innerText = "Aloqa uchun telefon raqam";
         inputField.placeholder = "+998901234567";
-    } else if (product.type === 'pop') {
-        modalTitle.innerText = "PUBG Player ID (Mashhurlik uchun)";
-        inputField.placeholder = "ID kiriting";
     } else {
         modalTitle.innerText = "PUBG Player ID";
-        inputField.placeholder = "531234567";
+        inputField.placeholder = "ID raqamingizni kiriting";
     }
 
     modal.style.display = 'flex';
@@ -280,10 +138,10 @@ function checkout() {
 
 async function processPayment() {
     const contactInput = document.getElementById('pubg-game-id').value;
-    if (!contactInput) return showToast("Ma'lumot kiritilmadi!");
+    if (!contactInput) return tg.showAlert("Ma'lumot kiritilmadi!");
 
     const product = products.find(p => p.id === currentProductId);
-    const btn = document.querySelector('#pubg-id-modal button');
+    const btn = document.querySelector('#pubg-id-modal .primary-btn');
     
     btn.disabled = true;
     btn.innerText = "Yuborilmoqda...";
@@ -294,7 +152,7 @@ async function processPayment() {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 telegram_id: userTelegramId,
-                type: product.type || 'uc',
+                type: product.type,
                 name: product.label,
                 contact: contactInput,
                 total_price: product.price
@@ -307,13 +165,13 @@ async function processPayment() {
             closePubgModal();
             tg.showPopup({
                 title: "Muvaffaqiyatli!",
-                message: "Buyurtmangiz qabul qilindi. Tez orada bajariladi.",
+                message: "Buyurtmangiz qabul qilindi. Operator tasdiqlashini kuting.",
                 buttons: [{type: "ok"}]
             });
-            fetchBalance(); // Balansni yangilash
+            fetchBalance();
         } else {
             const err = await res.json();
-            tg.showAlert(err.error || "Xatolik yuz berdi");
+            tg.showAlert(err.error || "Xatolik!");
         }
     } catch (e) {
         tg.showAlert("Server bilan aloqa uzildi!");
@@ -323,123 +181,26 @@ async function processPayment() {
     }
 }
 
-    // PUBG ID so'rash
-    document.getElementById('pubg-id-modal').style.display = 'flex';
-}
-
-function closePubgModal() {
-    document.getElementById('pubg-id-modal').style.display = 'none';
-}
-
-async function processPayment() {
-    const pubgId = document.getElementById('pubg-game-id').value;
-    if (!pubgId) return showToast("PUBG ID kiritilmadi!");
-
-    // Buttonni bloklash
-    const btn = document.querySelector('#pubg-id-modal button');
-    btn.disabled = true;
-    btn.innerText = "Bajarilmoqda...";
-
-    // Har bir tovar uchun alohida so'rov (yoki hammasini bitta qilsa bo'ladi)
-    // Bu yerda soddalik uchun loop qilamiz
-    for (const item of cart) {
-        await fetch(`${API_BASE_URL}/api/buy-uc`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                telegram_id: userTelegramId,
-                uc_amount: item.uc,
-                price: item.price,
-                pubg_id: pubgId
-            })
-        });
-    }
-
-    // Reset
-    cart = [];
-    updateCartUI();
-    closePubgModal();
-    btn.disabled = false;
-    btn.innerText = "To'lash";
-    
-    fetchBalance(); // Balansni yangilash
-    
-    tg.showPopup({
-        title: "Muvaffaqiyatli!",
-        message: "Buyurtmangiz qabul qilindi. 1 Daqiqa kuting. Buyurtma yo'lda ",
-        buttons: [{type: "ok"}]
-    });
-    
-    switchTab('profile'); // Profilga o'tib tarixni ko'rish (kelajakda)
-}
-
-// 10. TOPUP (Hisob to'ldirish)
-function openTopupModal() {
-    document.getElementById('topup-modal').style.display = 'flex';
-}
-function closeTopupModal() {
-    document.getElementById('topup-modal').style.display = 'none';
-}
-
-async function requestTopup() {
-    const amount = document.getElementById('topup-amount').value;
-    if (!amount || amount < 1000) return showToast("Minimal summa 1000 UZS");
-
-    await fetch(`${API_BASE_URL}/api/request-topup`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            telegram_id: userTelegramId,
-            amount: amount
-        })
-    });
-
-    closeTopupModal();
-    tg.showPopup({
-        title: "So'rov yuborildi",
-        message: "Tasdiqlanishini kuting.",
-        buttons: [{type: "ok"}]
-    });
-}
-
-// UTILS
-function formatMoney(amount) {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-}
-
-function showToast(msg) {
-    // Oddiy alert o'rniga chiroyli toast qilish mumkin
-    // Hozircha telegram popup ishlatamiz
-    tg.showAlert(msg);
-}
-let selectedFileBase64 = null;
-
+// ==========================================
+// 6. TOPUP (BALANCE) LOGIC
+// ==========================================
 function previewFile() {
     const file = document.getElementById('receipt-upload').files[0];
     const hint = document.getElementById('file-preview-name');
-    
     if (file) {
         hint.innerText = "Tanlandi: " + file.name;
         const reader = new FileReader();
-        reader.onload = function(e) {
-            selectedFileBase64 = e.target.result; // Base64 formatida saqlaydi
-        };
+        reader.onload = (e) => selectedFileBase64 = e.target.result;
         reader.readAsDataURL(file);
     }
-}
-
-function copyCard(number) {
-    navigator.clipboard.writeText(number);
-    tg.showScanQrPopup({ text: "Karta raqami nusxalandi!" }); // Kichik vizual effekt
-    setTimeout(() => tg.closeScanQrPopup(), 1000);
 }
 
 async function requestTopup() {
     const amount = document.getElementById('topup-amount').value;
     const btn = document.getElementById('send-topup-btn');
 
-    if (!amount || amount < 1000) return tg.showAlert("Minimal summa 1000 UZS");
-    if (!selectedFileBase64) return tg.showAlert("Iltimos, to'lov cheki (rasm) yuklang!");
+    if (!amount || amount < 1000) return tg.showAlert("Minimal 1000 UZS");
+    if (!selectedFileBase64) return tg.showAlert("Chek rasmini yuklang!");
 
     btn.disabled = true;
     btn.innerText = "Yuborilmoqda...";
@@ -451,7 +212,7 @@ async function requestTopup() {
             body: JSON.stringify({
                 telegram_id: userTelegramId,
                 amount: amount,
-                image: selectedFileBase64 // Rasmni yuboramiz
+                image: selectedFileBase64
             })
         });
 
@@ -459,20 +220,53 @@ async function requestTopup() {
             closeTopupModal();
             tg.showPopup({
                 title: "Yuborildi!",
-                message: "Tasdiqlangach hisobingiz to'ldiriladi. 1-5 daqiqa kuting va sahifani yangilang yoki qayta oching.",
+                message: "Chek tekshirilgach balans to'ldiriladi (1-10 daqiqa).",
                 buttons: [{type: "ok"}]
             });
         }
-    } catch (e) {
-        tg.showAlert("Xatolik yuz berdi!");
-    } finally {
+    } catch (e) { tg.showAlert("Xatolik!"); }
+    finally {
         btn.disabled = false;
-        btn.innerText = "Tasdiqlash uchun yuborish";
+        btn.innerText = "Tasdiqlash";
     }
-
 }
 
+// ==========================================
+// 7. UTILS & UI
+// ==========================================
+async function fetchBalance() {
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/user?id=${userTelegramId}`);
+        const data = await res.json();
+        if (data && data.balance !== undefined) {
+            userBalance = data.balance;
+            document.getElementById('balance-display').innerText = formatMoney(userBalance) + ' UZS';
+        }
+    } catch (e) { console.error("Balance fetch error"); }
+}
 
+function formatMoney(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
 
+function closePubgModal() { document.getElementById('pubg-id-modal').style.display = 'none'; }
+function openTopupModal() { document.getElementById('topup-modal').style.display = 'flex'; }
+function closeTopupModal() { document.getElementById('topup-modal').style.display = 'none'; }
 
+function copyCard(number) {
+    navigator.clipboard.writeText(number);
+    tg.showAlert("Karta raqami nusxalandi!");
+}
 
+function createExplosionParticles() {
+    const container = document.querySelector('.particles');
+    if(!container) return;
+    for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        p.classList.add('particle');
+        container.appendChild(p);
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 100 + Math.random() * 100;
+        p.style.setProperty('--x', Math.cos(angle) * dist + 'px');
+        p.style.setProperty('--y', Math.sin(angle) * dist + 'px');
+        setTimeout(() => p.classList.add('active'), 1500);
+    }
+}
