@@ -51,15 +51,16 @@ try {
         joined_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )");
 
-    $pdo->exec("CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id TEXT,
-        pubg_id TEXT,
-        uc_amount INTEGER,
-        price REAL,
-        status TEXT DEFAULT 'pending', -- pending, processing, completed, cancelled
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )");
+  $pdo->exec("CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    product_type TEXT, -- 'uc', 'pop' yoki 'acc'
+    product_name TEXT,
+    contact_info TEXT, -- ID yoki Telefon raqami shu yerga tushadi
+    price REAL,
+    status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)");
 
     $pdo->exec("CREATE TABLE IF NOT EXISTS topups (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
