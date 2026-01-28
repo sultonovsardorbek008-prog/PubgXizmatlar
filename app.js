@@ -60,6 +60,7 @@ function renderProducts(filterType = 'uc') {
 // Sayt ochilganda UC ni ko'rsatish
 renderProducts('uc');
 
+let currentProductId = null; // Tanlangan mahsulotni saqlash uchun
 // State
 let cart = [];
 let userBalance = 0;
@@ -237,10 +238,15 @@ function switchTab(tabName) {
     window.scrollTo(0, 0);
 }
 
-// 9. CHECKOUT & PAYMENT
+// 9. CHECKOUT & PAYMENT (YANGILANGAN)
 function checkout() {
     if (cart.length === 0) return showToast("Savat bo'sh!");
     
+    // Hozircha savatda faqat bitta mahsulot bor deb hisoblaymiz (soddalik uchun)
+    // Chunki har bir mahsulot turi (ID yoki Tel) har xil bo'lishi mumkin
+    const product = cart[0]; 
+    currentProductId = product.id;
+
     let total = cart.reduce((sum, item) => sum + item.price, 0);
     
     if (userBalance < total) {
@@ -251,6 +257,71 @@ function checkout() {
         });
         return;
     }
+
+    // Modalni tayyorlash
+    const modal = document.getElementById('pubg-id-modal');
+    const inputField = document.getElementById('pubg-game-id'); // HTMLdagi ID nomi
+    const modalTitle = modal.querySelector('h3');
+
+    // Mahsulot turiga qarab modalni o'zgartiramiz
+    if (product.type === 'acc') {
+        modalTitle.innerText = "Aloqa uchun raqamingiz";
+        inputField.placeholder = "+998901234567";
+    } else if (product.type === 'pop') {
+        modalTitle.innerText = "PUBG Player ID (Mashhurlik uchun)";
+        inputField.placeholder = "ID kiriting";
+    } else {
+        modalTitle.innerText = "PUBG Player ID";
+        inputField.placeholder = "531234567";
+    }
+
+    modal.style.display = 'flex';
+}
+
+async function processPayment() {
+    const contactInput = document.getElementById('pubg-game-id').value;
+    if (!contactInput) return showToast("Ma'lumot kiritilmadi!");
+
+    const product = products.find(p => p.id === currentProductId);
+    const btn = document.querySelector('#pubg-id-modal button');
+    
+    btn.disabled = true;
+    btn.innerText = "Yuborilmoqda...";
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/place-order`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                telegram_id: userTelegramId,
+                type: product.type || 'uc',
+                name: product.label,
+                contact: contactInput,
+                total_price: product.price
+            })
+        });
+
+        if (res.ok) {
+            cart = [];
+            updateCartUI();
+            closePubgModal();
+            tg.showPopup({
+                title: "Muvaffaqiyatli!",
+                message: "Buyurtmangiz qabul qilindi. Tez orada bajariladi.",
+                buttons: [{type: "ok"}]
+            });
+            fetchBalance(); // Balansni yangilash
+        } else {
+            const err = await res.json();
+            tg.showAlert(err.error || "Xatolik yuz berdi");
+        }
+    } catch (e) {
+        tg.showAlert("Server bilan aloqa uzildi!");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "To'lash";
+    }
+}
 
     // PUBG ID so'rash
     document.getElementById('pubg-id-modal').style.display = 'flex';
@@ -400,6 +471,7 @@ async function requestTopup() {
     }
 
 }
+
 
 
 
