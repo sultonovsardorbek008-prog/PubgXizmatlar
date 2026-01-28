@@ -13,13 +13,50 @@ const API_BASE_URL = window.location.origin; // Agar index.php bilan bir joyda t
 
 // UC Paketlari (Backenddan ham olish mumkin, hozircha static)
 const products = [
-    { id: 1, uc: 60, price: 12000, label: "60 UC" },
-    { id: 2, uc: 325, price: 58000, label: "300+25 UC" },
-    { id: 3, uc: 660, price: 118000, label: "600+60 UC" },
-    { id: 4, uc: 1800, price: 287000, label: "1500+300 UC" },
-    { id: 5, uc: 3850, price: 580000, label: "3000+850 UC" },
-    { id: 6, uc: 8100, price: 1150000, label: "6000+2100 UC" }
+    // UC Paketlari
+    { id: 1, type: 'uc', label: "60 UC", price: 12000, uc: 60 },
+    { id: 2, type: 'uc', label: "325 UC", price: 58000, uc: 325 },
+    
+    // Mashhurlik (Popularity)
+    { id: 101, type: 'pop', label: "100K Mashhurlik", price: 45000 },
+    { id: 102, type: 'pop', label: "500K Mashhurlik", price: 200000 },
+    
+    // Akkauntlar
+    { id: 201, type: 'acc', label: "M416 Muzli Lv.4", price: 850000, description: "Old loginlar toza" },
+    { id: 202, type: 'acc', label: "Full Akkaunt", price: 2500000, description: "Evo setlar bor" }
 ];
+
+// Kategoriyani almashtirish funksiyasi
+function showCategory(type) {
+    const btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(btn => btn.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    renderProducts(type);
+}
+
+// Mahsulotlarni ekranga chiqarish (Yangilangan)
+function renderProducts(filterType = 'uc') {
+    const list = document.getElementById('product-list');
+    list.innerHTML = '';
+
+    const filtered = products.filter(p => p.type === filterType);
+
+    filtered.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+            <h4>${p.label}</h4>
+            <p class="price">${p.price.toLocaleString()} UZS</p>
+            ${p.description ? `<small>${p.description}</small>` : ''}
+            <button onclick="addToCart(${p.id})">Sotib olish</button>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// Sayt ochilganda UC ni ko'rsatish
+renderProducts('uc');
 
 // State
 let cart = [];
@@ -361,4 +398,5 @@ async function requestTopup() {
     }
 
 }
+
 
