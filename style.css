@@ -479,3 +479,34 @@ input {
     border-bottom: 1px solid #eee;
 }
 
+.category-tabs {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background: var(--card-bg);
+    margin-bottom: 15px;
+    border-radius: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    padding: 10px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.6;
+    transition: 0.3s;
+}
+
+.tab-btn.active {
+    opacity: 1;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+}
