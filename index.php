@@ -20,6 +20,34 @@ if ($uri === '/app.js') {
     exit;
 }
 
+if ($uri === '/api/place-order' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    // Foydalanuvchi balansini tekshirish (o'z kodingizdagi mantiq)
+    $stmt = $pdo->prepare("SELECT balance FROM users WHERE telegram_id = ?");
+    $stmt->execute([$data['telegram_id']]);
+    $user = $stmt->fetch();
+
+    if ($user['balance'] < $data['total_price']) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Mablag\' yetarli emas']);
+        exit;
+    }
+
+    // Buyurtmani saqlash (product_type qo'shildi)
+    $stmt = $pdo->prepare("INSERT INTO orders (user_id, product_type, product_name, contact_info, price) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([
+        $data['telegram_id'],
+        $data['type'],        // UC, POP yoki ACC
+        $data['name'],
+        $data['contact'],     // Bu yerda yo ID yoki TEL bo'ladi
+        $data['total_price']
+    ]);
+    
+    // Balansdan ayirish va Adminga xabar yuborish...
+    // (O'z kodingizdagi qolgan qismini davom ettirasiz)
+}
+
 // 2. BACKEND LOGIC (API va Webhook)
 // Bu yerdan botingizning asosiy mantiqi davom etadi...
 
