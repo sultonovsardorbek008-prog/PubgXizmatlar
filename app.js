@@ -55,6 +55,24 @@ function renderProducts(filterType = 'uc') {
     });
 }
 
+function openOrderModal(productId) {
+    const product = products.find(p => p.id === productId);
+    const modal = document.getElementById('pubg-id-modal');
+    const inputField = document.getElementById('pubg-id-input');
+    const title = modal.querySelector('h3');
+
+    if (product.type === 'acc') {
+        title.innerText = "Aloqa uchun raqamingiz";
+        inputField.placeholder = "Masalan: +998901234567";
+    } else {
+        title.innerText = "PUBG Player ID";
+        inputField.placeholder = "ID raqamingizni kiriting";
+    }
+
+    modal.classList.add('active');
+    // Keyingi qadamda buyurtma berishda product.type ni ham yuboramiz
+}
+
 // Sayt ochilganda UC ni ko'rsatish
 renderProducts('uc');
 
@@ -398,5 +416,6 @@ async function requestTopup() {
     }
 
 }
+
 
 
