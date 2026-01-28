@@ -146,20 +146,22 @@
     </div>
 </div>
 
-    <div id="pubg-id-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closePubgModal()">&times;</span>
-            <h3>PUBG ID Kiritish</h3>
-            <p>UC qaysi akkauntga tushsin? ID raqam yozing:</p>
-            <input type="number" id="pubg-game-id" placeholder="5123456789">
-            <button class="primary-btn" onclick="processPayment()">To'lash</button>
-        </div>
+   <div id="pubg-id-modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePubgModal()">&times;</span>
+        <h3 id="modal-input-title">PUBG Player ID</h3> <p class="modal-hint">Ma'lumotlar xato kiritilsa, buyurtma bajarilmaydi!</p>
+        
+        <input type="text" id="pubg-game-id" placeholder="ID raqamingizni kiriting">
+        
+        <button class="primary-btn" onclick="processPayment()">To'lash</button>
     </div>
+</div>
 
     <script src="app.js"></script>
 </body>
 
 </html>
+
 
 
 
