@@ -434,16 +434,27 @@ function changeOrderStatus($order_id, $status, $admin_chat_id, $message_id) {
     // Agar bekor qilinsa pulni qaytarish
     if ($status == 'cancelled' && $order['status'] != 'cancelled') {
         $pdo->prepare("UPDATE users SET balance = balance + ? WHERE telegram_id = ?")->execute([$order['price'], $order['user_id']]);
-        $msg_user = "❌ Buyurtmangiz (#$order_id) bekor qilindi va pulingiz qaytarildi.";
-        $msg_admin = "❌ Buyurtma #$order_id bekor qilindi va pul qaytarildi.";
-    } elseif ($status == 'completed') {
-        $msg_user = "✅ Buyurtmangiz (#$order_id) bajarildi! UC hisobingizga tushdi.";
+        $msg_user = "❌ Buyurtmangiz (#$order_id) bekor qilindi va mablag' balansingizga qaytarildi.";
+        $msg_admin = "❌ Buyurtma #$order_id bekor qilindi.";
+    } 
+    // Muvaffaqiyatli bajarilganda
+    elseif ($status == 'completed') {
+        if ($order['product_type'] == 'acc') {
+            // Akkaunt bo'lsa login parolni admin yuborishi haqida xabar
+            $msg_user = "✅ Akkaunt buyurtmangiz (#$order_id) tasdiqlandi!\n\n👨‍💻 Tez orada operatorimiz siz bilan bog'lanadi va ma'lumotlarni topshiradi.";
+        } elseif ($order['product_type'] == 'pop') {
+            $msg_user = "✅ Mashhurlik buyurtmangiz (#$order_id) muvaffaqiyatli bajarildi!";
+        } else {
+            // Standart UC uchun
+            $msg_user = "✅ Buyurtmangiz (#$order_id) bajarildi! UC hisobingizga tushdi.";
+        }
         $msg_admin = "✅ Buyurtma #$order_id bajarildi deb belgilandi.";
-    } elseif ($status == 'processing') {
-        $msg_user = "🔄 Buyurtmangiz (#$order_id) ijro etilmoqda...";
+    } 
+    // Jarayonda bo'lsa
+    elseif ($status == 'processing') {
+        $msg_user = "🔄 Buyurtmangiz (#$order_id) ko'rib chiqilmoqda va ijro etilmoqda...";
         $msg_admin = "🔄 Buyurtma #$order_id jarayonga o'tkazildi.";
     }
-
     $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?")->execute([$status, $order_id]);
     
     if (isset($msg_user)) sendMessage($order['user_id'], $msg_user);
